@@ -9,9 +9,30 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"github.com/pepa65/horcrux/pkg/shamir"
+	"time"
+
 	"github.com/pepa65/horcrux/pkg/multiplexing"
+	"github.com/pepa65/horcrux/pkg/shamir"
 )
+
+func Query(filename string) error {
+	header := &horcruxHeader{}
+	file, err := os.Open(filename)
+	defer file.Close()
+	if err != nil {
+		return errors.New("Problem reading file")
+	}
+	header, err = getHeaderFromHorcruxFile(file)
+	if err != nil || header.OriginalFilename == "" {
+		return errors.New("Bad header")
+	}
+	stamp := time.Unix(header.Timestamp, 0)
+	fmt.Printf("Original file '%s' split at %s\n", header.OriginalFilename,
+		stamp)
+	fmt.Printf("Horcrux %d of %d (minimum of %d needed to merge)\n",
+		header.Index, header.Total, header.Threshold)
+	return nil
+}
 
 func Merge(dir string) error {
 	files, err := ioutil.ReadDir(dir)
@@ -90,7 +111,7 @@ func Merge(dir string) error {
 
 	newFile, err := os.OpenFile(newFilename, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return errors.New("Problem writing to file "+newFilename)
+		return errors.New("Problem writing to file " + newFilename)
 	}
 	defer newFile.Close()
 

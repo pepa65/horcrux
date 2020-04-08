@@ -3,15 +3,16 @@ package commands
 import (
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
-	"errors"
 	"time"
-	"github.com/pepa65/horcrux/pkg/shamir"
+
 	"github.com/pepa65/horcrux/pkg/multiplexing"
+	"github.com/pepa65/horcrux/pkg/shamir"
 )
 
 func Split(path string, n int, m int) error {
@@ -36,11 +37,11 @@ func Split(path string, n int, m int) error {
 		index := i + 1
 		headerBytes, err := json.Marshal(&horcruxHeader{
 			OriginalFilename: originalFilename,
-			Timestamp: timestamp,
-			Index: index,
-			Total: n,
-			KeyFragment: keyFragments[i],
-			Threshold: m,
+			Timestamp:        timestamp,
+			Index:            index,
+			Total:            n,
+			KeyFragment:      keyFragments[i],
+			Threshold:        m,
 		})
 		if err != nil {
 			return errors.New("Problem making the header into JSON")
@@ -54,11 +55,11 @@ func Split(path string, n int, m int) error {
 		_ = os.Truncate(horcruxFilename, 0)
 		horcruxFile, err := os.OpenFile(horcruxFilename, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			return errors.New("Problem writing horcrux file "+horcruxFilename)
+			return errors.New("Problem writing horcrux file " + horcruxFilename)
 		}
 		defer horcruxFile.Close()
 
-		horcruxFile.WriteString(header(index, n, m, headerBytes))
+		horcruxFile.WriteString(header(originalFilename, index, n, m, headerBytes))
 		horcruxFiles[i] = horcruxFile
 	}
 
@@ -66,7 +67,7 @@ func Split(path string, n int, m int) error {
 	var fileReader io.Reader = file
 	reader := cryptoReader(fileReader, key)
 	var writer io.Writer
-	if m==n {
+	if m == n {
 		// All horcruxes are needed to resurrect the original, so use multiplexer
 		// to divide the encrypted content evenly between the horcruxes
 		writer = &multiplexing.Demultiplexer{Writers: horcruxFiles}
@@ -86,17 +87,12 @@ func Split(path string, n int, m int) error {
 	return nil
 }
 
-func header(index int, n int, m int, headerBytes []byte) string {
-	return fmt.Sprintf(`# This is a 'horcrux', an encrypted fragment of a file.
-# It is number %d of %d horcruxes that contain parts of the original file.
-# In order to resurrect the orininal file assemble at least %d other
-# horcrux(es) and then merge them using the program found here:
-# https://github.com/pepa65/horcrux
-
+func header(name string, index int, n int, m int, headerBytes []byte) string {
+	return fmt.Sprintf(`/* This is a 'horcrux', an encrypted fragment of '%s'. It is number %d of %d horcruxes that contain parts of the original file. They can be merged when at least %d fragments are present with the program found here: https://github.com/pepa65/horcrux */
 -- HEADER --
 %s
 -- BODY --
-`, index, n, m-1, headerBytes)
+`, name, index, n, m, headerBytes)
 }
 
 func generateKey() ([]byte, error) {
