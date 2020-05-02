@@ -89,7 +89,7 @@ func Merge(dir string) error {
 
 	var fileReader io.Reader
 	if headers[0].Total == headers[0].Threshold {
-		// sort by index
+		// Sort by index
 		orderedHorcruxFiles := make([]*os.File, len(horcruxFiles))
 		for i, h := range horcruxFiles {
 			orderedHorcruxFiles[headers[i].Index-1] = h
@@ -97,7 +97,7 @@ func Merge(dir string) error {
 
 		fileReader = &multiplexing.Multiplexer{Readers: orderedHorcruxFiles}
 	} else {
-		fileReader = horcruxFiles[0] // arbitrarily read from the first horcrux: they all contain the same contents
+		fileReader = horcruxFiles[0] // Read the first horcrux: all the same
 	}
 
 	reader := cryptoReader(fileReader, key)
@@ -123,8 +123,7 @@ func Merge(dir string) error {
 	return err
 }
 
-// Get header from horcrux file and leave its read pointer at the encrypted
-// content for later reading
+// Get header from horcrux, leave read pointer at the encrypted content
 func getHeaderFromHorcruxFile(file *os.File) (*horcruxHeader, error) {
 	currentHeader := &horcruxHeader{}
 	scanner := bufio.NewScanner(file)
@@ -137,7 +136,7 @@ func getHeaderFromHorcruxFile(file *os.File) (*horcruxHeader, error) {
 			bytesBeforeBody += len(scanner.Bytes()) + 1
 			headerLine := scanner.Bytes()
 			json.Unmarshal(headerLine, currentHeader)
-			scanner.Scan() // one more to get past the body line
+			scanner.Scan() // One more to get past the body line
 			bytesBeforeBody += len(scanner.Bytes()) + 1
 			break
 		}

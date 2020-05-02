@@ -1,7 +1,9 @@
 # horcrux
 **Split file into encrypted horcruxes, mergeable without password**
 
-After https://github.com/jesseduffield/horcrux
+* Repo: https://github.com/pepa65/horcrux
+* Contact: pepa65@passchier.net
+* After https://github.com/jesseduffield/horcrux
 
 ## Function
 The program `horcrux` can split a file into a predefined number of horcruxes,
@@ -10,9 +12,9 @@ directory back into the original file.
 
 ### Split
 To split up a file into horcruxes, call `horcrux` with the filename and
-optionally flags -n/--num with the number of desired horcruxes or -m/--min
-followed by the minimum number of horcruxes needed to merge back into the
-original file. Example:
+optionally flags `-n`/`--num` with the number of desired horcruxes or
+`-m`/`--min` followed by the minimum number of horcruxes needed to merge back
+into the original file. Example:
 
 `horcrux -n 5 -m 3 secret.txt`
 
@@ -30,8 +32,8 @@ any horcruxes in the directory that were produced at a different time or from a
 different file!
 
 ### Query
-To display information about a horcrux, call `horcrux` with the -q/--query flag
-followed by the filename of the horcrux in question, like:
+To display information about a horcrux, call `horcrux` with the `-q`/`--query`
+flag followed by the filename of the horcrux in question, like:
 
 `horcrux -q file.horcrux`
 

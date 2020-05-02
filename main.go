@@ -29,7 +29,7 @@ func main() {
 			n, err = strconv.Atoi(arg)
 			if err != nil {
 				//fmt.Println(err)
-				usage(err, "Argument of -n/--num should be an integer: '" + arg + "'")
+				usage(err, "Argument of -n/--num should be an integer: '"+arg+"'")
 			}
 			if n < 2 {
 				usage(nil, "Argument of -n/--num should be at least 2")
@@ -44,7 +44,7 @@ func main() {
 			m, err = strconv.Atoi(arg)
 			if err != nil {
 				//fmt.Println(err)
-				usage(err, "Argument of -m/--min should be an integer: '" + arg + "'")
+				usage(err, "Argument of -m/--min should be an integer: '"+arg+"'")
 			}
 			if m < 2 {
 				usage(nil, "Argument of -m/--min should be at least 2")
@@ -87,10 +87,10 @@ func main() {
 				anypath = true
 			} else {
 				if !anypath && arg[0] == '-' {
-					usage(nil, "Unknown flag: " + arg)
+					usage(nil, "Unknown flag: "+arg)
 				}
 				if len(path) > 0 {
-					usage(nil, "Redundant argument '" + arg + "' after '" + path + "'")
+					usage(nil, "Redundant argument '"+arg+"' after '"+path+"'")
 				}
 				path = arg
 			}
@@ -114,8 +114,7 @@ func main() {
 			} else { // File
 				if qarg > 0 { // Query
 					if err = commands.Query(path); err != nil {
-						//fmt.Println(err)
-						usage(err, "Query of file '" + path + "' failed")
+						usage(err, "Query of file '"+path+"' failed")
 					}
 					return
 				}
@@ -123,9 +122,9 @@ func main() {
 			}
 		} else {
 			if split { // -n and/or -m given
-				usage(nil, "Not a file: " + path)
+				usage(nil, "Not a file: "+path)
 			}
-			usage(nil, "Not a file/directory: " + path)
+			usage(nil, "Not a file/directory: "+path)
 		}
 	}
 	if split {
@@ -133,20 +132,19 @@ func main() {
 			n = 2
 		}
 		if m > n {
-			usage(nil, "Argument of -m should less or equal to " + string(n))
+			usage(nil, "Argument of -m should less or equal to "+string(n))
 		}
 		if m == 0 { // default minimum is all
 			m = n
 		}
 		if err := commands.Split(path, n, m); err != nil {
-			//fmt.Println(err)
-			usage(err, "Splitting file '" + path + "' failed")
+			usage(err, "Splitting file '"+path+"' failed")
 		}
 		return
 	}
 	// Merge
 	if err = commands.Merge(path); err != nil {
-		usage(err, "Merge in directory '" + path + "' failed")
+		usage(err, "Merge in directory '"+path+"' failed")
 	}
 }
 

@@ -48,7 +48,7 @@ func Split(path string, n int, m int) error {
 		}
 
 		originalFilenameWithoutExt := strings.TrimSuffix(originalFilename, filepath.Ext(originalFilename))
-		horcruxFilename := fmt.Sprintf("%s.%dof%d.horcrux", originalFilenameWithoutExt, index, n)
+		horcruxFilename := fmt.Sprintf("%s_%dof%d.horcrux", originalFilenameWithoutExt, index, n)
 		fmt.Printf("creating %s\n", horcruxFilename)
 
 		// Clearing file in case it already existed
