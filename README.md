@@ -4,6 +4,7 @@
 * Repo: https://github.com/pepa65/horcrux
 * Contact: pepa65@passchier.net
 * After https://github.com/jesseduffield/horcrux
+* Install: `wget -qO- gobinaries.com/pepa65/horcrux |sh`
 
 ## Function
 The program `horcrux` can split a file into a predefined number of horcruxes,
