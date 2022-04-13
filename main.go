@@ -9,6 +9,8 @@ import (
 	"github.com/pepa65/horcrux/pkg/commands"
 )
 
+const version = "0.3.0"
+
 var self = ""
 
 func main() {
@@ -149,7 +151,7 @@ func main() {
 }
 
 func usage(e error, err string) {
-	fmt.Println(self + " - Split file into encrypted 'horcruxes', mergeable without password")
+	fmt.Println(self + " v" + version + " - Split file into encrypted 'horcruxes', mergeable without key")
 	fmt.Println("Usage:  " + self + " [-n|--number <n>] [-m|--minimum <m>] <file>  |  [<dir>]  |")
 	fmt.Println("                -q|--query <horcrux>  |  -h|--help")
 	fmt.Println("  <n>:        Number of horcruxes to produce [2..255, default: 2]")

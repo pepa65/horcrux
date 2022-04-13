@@ -1,5 +1,5 @@
-# horcrux
-**Split file into encrypted horcruxes, mergeable without password**
+# horcrux v0.3.0
+**Split file into encrypted horcruxes, mergeable without key**
 
 * Repo: https://github.com/pepa65/horcrux
 * Contact: pepa65@passchier.net
@@ -49,7 +49,7 @@ on your PATH, or use it by specifying its path, like: `~/horcrux`.
 
 ## Usage
 ```
-horcrux - Split file into encrypted 'horcruxes', mergeable without password
+horcrux v0.3.0 - Split file into encrypted 'horcruxes', mergeable without key
 Usage:  horcrux [-n|--number <n>] [-m|--minimum <m>] <file>  |  [<dir>]  |
                 -q|--query <horcrux>  |  -h|--help
   <n>:        Number of horcruxes to produce [2..255, default: 2]
