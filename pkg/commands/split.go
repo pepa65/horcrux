@@ -88,7 +88,7 @@ func Split(path string, n int, m int) error {
 }
 
 func header(name string, index int, n int, m int, headerBytes []byte) string {
-	return fmt.Sprintf(`/* This is a 'horcrux', an encrypted fragment of '%s'. It is number %d of %d horcruxes that contain parts of the original file. They can be merged when at least %d fragments are present with the program found here: https://github.com/pepa65/horcrux */
+	return fmt.Sprintf(`/* This file is a "horcrux", an encrypted fragment of '%s'. It is number %d of %d horcruxes that contain parts of the original file, which can be reconstituted when at least %d fragments are present, with the program found here: https://github.com/pepa65/horcrux */
 -- HEADER --
 %s
 -- BODY --
