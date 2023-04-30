@@ -18,17 +18,17 @@ import (
 func Split(path string, n int, m int) error {
 	key, err := generateKey()
 	if err != nil {
-		return errors.New("Problem generating a random key")
+		return errors.New("problem generating a random key")
 	}
 	keyFragments, err := shamir.Split(key, n, m)
 	if err != nil {
-		return errors.New("Problem splitting the key")
+		return errors.New("problem splitting the key")
 	}
 
 	timestamp := time.Now().Unix()
 	file, err := os.Open(path)
 	if err != nil {
-		return errors.New("Problem opening the file")
+		return errors.New("problem opening the file")
 	}
 	originalFilename := filepath.Base(path)
 	horcruxFiles := make([]*os.File, n)
@@ -44,7 +44,7 @@ func Split(path string, n int, m int) error {
 			Threshold:        m,
 		})
 		if err != nil {
-			return errors.New("Problem making the header into JSON")
+			return errors.New("problem making the header into JSON")
 		}
 
 		originalFilenameWithoutExt := strings.TrimSuffix(originalFilename, filepath.Ext(originalFilename))
@@ -55,7 +55,7 @@ func Split(path string, n int, m int) error {
 		_ = os.Truncate(horcruxFilename, 0)
 		horcruxFile, err := os.OpenFile(horcruxFilename, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			return errors.New("Problem writing horcrux file " + horcruxFilename)
+			return errors.New("problem writing horcrux file " + horcruxFilename)
 		}
 		defer horcruxFile.Close()
 
@@ -80,7 +80,7 @@ func Split(path string, n int, m int) error {
 	}
 	_, err = io.Copy(writer, reader)
 	if err != nil {
-		return errors.New("Problem copying the horcruxes")
+		return errors.New("problem copying the horcruxes")
 	}
 
 	fmt.Println("Done!")

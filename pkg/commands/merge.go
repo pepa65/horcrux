@@ -18,13 +18,13 @@ import (
 func Query(filename string) error {
 	header := &horcruxHeader{}
 	file, err := os.Open(filename)
-	defer file.Close()
 	if err != nil {
-		return errors.New("Problem reading file")
+		return errors.New("problem reading file")
 	}
+	defer file.Close()
 	header, err = getHeaderFromHorcruxFile(file)
 	if err != nil || header.OriginalFilename == "" {
-		return errors.New("Bad header")
+		return errors.New("bad header")
 	}
 	stamp := time.Unix(header.Timestamp, 0)
 	fmt.Printf("Original file '%s' split at %s\n", header.OriginalFilename,
@@ -37,7 +37,7 @@ func Query(filename string) error {
 func Merge(dir string) error {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return errors.New("Empty directory")
+		return errors.New("empty directory")
 	}
 
 	filenames := []string{}
@@ -52,19 +52,19 @@ func Merge(dir string) error {
 
 	for _, filename := range filenames {
 		file, err := os.Open(filename)
-		defer file.Close()
 		if err != nil {
-			return errors.New("Problem reading file")
+			return errors.New("problem reading file")
 		}
+		defer file.Close()
 
 		currentHeader, err := getHeaderFromHorcruxFile(file)
 		if err != nil {
-			return errors.New("Bad header")
+			return errors.New("bad header")
 		}
 
 		if len(headers) > 0 && (currentHeader.OriginalFilename != headers[0].OriginalFilename || currentHeader.Timestamp != headers[0].Timestamp) {
 			fmt.Println("All horcruxes in the directory must have the same timestamp and filename")
-			return errors.New("All horcruxes in the directory must have the same timestamp and filename")
+			return errors.New("all horcruxes in the directory must have the same timestamp and filename")
 		}
 
 		headers = append(headers, *currentHeader)
@@ -72,9 +72,9 @@ func Merge(dir string) error {
 	}
 
 	if len(headers) == 0 {
-		return errors.New("No horcruxes in directory")
+		return errors.New("no horcruxes in directory")
 	} else if len(headers) < headers[0].Threshold {
-		return errors.New(fmt.Sprintf("Not enough horcruxes, %d are needed to resurrect the original, only %d here", headers[0].Threshold, len(headers)))
+		return fmt.Errorf("not enough horcruxes, %d are needed to resurrect the original, only %d here", headers[0].Threshold, len(headers))
 	}
 
 	keyFragments := make([][]byte, len(headers))
@@ -84,7 +84,7 @@ func Merge(dir string) error {
 
 	key, err := shamir.Combine(keyFragments)
 	if err != nil {
-		return errors.New("Problem recombining the horcruxes")
+		return errors.New("problem recombining the horcruxes")
 	}
 
 	var fileReader io.Reader
@@ -111,7 +111,7 @@ func Merge(dir string) error {
 
 	newFile, err := os.OpenFile(newFilename, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return errors.New("Problem writing to file " + newFilename)
+		return errors.New("problem writing to file " + newFilename)
 	}
 	defer newFile.Close()
 
@@ -128,6 +128,7 @@ func getHeaderFromHorcruxFile(file *os.File) (*horcruxHeader, error) {
 	currentHeader := &horcruxHeader{}
 	scanner := bufio.NewScanner(file)
 	bytesBeforeBody := 0
+	var headerFound bool
 	for scanner.Scan() {
 		line := scanner.Text()
 		bytesBeforeBody += len(scanner.Bytes()) + 1
@@ -138,15 +139,16 @@ func getHeaderFromHorcruxFile(file *os.File) (*horcruxHeader, error) {
 			json.Unmarshal(headerLine, currentHeader)
 			scanner.Scan() // One more to get past the body line
 			bytesBeforeBody += len(scanner.Bytes()) + 1
+			headerFound = true
 			break
 		}
 	}
 	if _, err := file.Seek(int64(bytesBeforeBody), io.SeekStart); err != nil {
-		return nil, errors.New("Problem accessing the horcrux")
+		return nil, errors.New("problem accessing the horcrux")
 	}
 
-	if currentHeader == nil {
-		return nil, errors.New("No header found in horcrux file")
+	if !headerFound {
+		return nil, errors.New("no header found in horcrux file")
 	}
 	return currentHeader, nil
 }

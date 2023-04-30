@@ -1,4 +1,4 @@
-# horcrux v0.3.1
+# horcrux v0.3.2
 **Split file into encrypted horcruxes, mergeable without key**
 
 * Repo: https://github.com/pepa65/horcrux
@@ -39,8 +39,8 @@ flag followed by the filename of the horcrux in question, like:
 `horcrux -q file.horcrux`
 
 ## Installation
-- Do `go get github.com/pepa65/horcrux` anywhere when golang is properly
-installed.
+- Do `go install github.com/pepa65/horcrux@latest` anywhere when golang is
+properly installed.
 - Or, clone this repo by: `git clone https://github.com/pepa65/horcrux`
 and do `cd horcrux` followed by `go install`.
 - Or for Linux amd64 systems, download the `horcrux` binary in this repo at:
@@ -49,7 +49,7 @@ on your PATH, or use it by specifying its path, like: `~/horcrux`.
 
 ## Usage
 ```
-horcrux v0.3.1 - Split file into encrypted 'horcruxes', mergeable without key
+horcrux v0.3.2 - Split file into encrypted 'horcruxes', mergeable without key
 Usage:  horcrux [-n|--number <n>] [-m|--minimum <m>] <file>  |  [<dir>]  |
                 -q|--query <horcrux>  |  -V|--version  |  -h|--help
   <n>:        Number of horcruxes to produce [2..255, default: 2]
