@@ -44,8 +44,9 @@ properly installed.
 - Or, clone this repo by: `git clone https://github.com/pepa65/horcrux`
 and do `cd horcrux` followed by `go install`.
 - Or for Linux amd64 systems, download the `horcrux` binary in this repo at:
-https://github.com/pepa65/horcrux/raw/master/horcrux and put it into a location
-on your PATH, or use it by specifying its path, like: `~/horcrux`.
+https://github.com/pepa65/horcrux/releases/download/v0.3.2/horcrux
+and put it into a location on your PATH, or use it by specifying its path:
+`~/horcrux`.
 
 ## Usage
 ```
