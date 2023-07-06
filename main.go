@@ -9,7 +9,7 @@ import (
 	"github.com/pepa65/horcrux/pkg/commands"
 )
 
-const version = "0.3.2"
+const version = "0.3.3"
 
 var self = ""
 
@@ -137,7 +137,7 @@ func main() {
 			n = 2
 		}
 		if m > n {
-			usage(nil, "Argument of -m should less or equal to "+string(n))
+			usage(nil, "Argument of -m should be less or equal to "+fmt.Sprintf("%d", n))
 		}
 		if m == 0 { // default minimum is all
 			m = n
