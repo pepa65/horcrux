@@ -9,7 +9,7 @@ import (
 	"github.com/pepa65/horcrux/pkg/commands"
 )
 
-const version = "0.5.0"
+const version = "0.5.1"
 
 var self = ""
 
@@ -158,7 +158,7 @@ func usage(e error, err string) {
 	fmt.Println("Usage:")
 	fmt.Println("  - Split & encrypt:  " + self + " [-n|--number N] [-m|--minimum M] FILE")
 	fmt.Println("        N:     Number of horcrux-files to produce [2..255, default: 2]")
-	fmt.Println("        M:     Min.number of horcrux-files to reconstitute [2..n, default: n]")
+	fmt.Println("        M:     Min.number of horcrux-files to reconstitute [2..N, default: N]")
 	fmt.Println("        FILE:  Original file to split up and encrypt")
 	fmt.Println("  - Reconstitute file:  " + self + " [DIR]")
 	fmt.Println("       DIR:  Directory with horcrux-files to reconstitute [default: current]")
@@ -169,7 +169,7 @@ func usage(e error, err string) {
 		fmt.Println(e)
 	}
 	if err != "" {
-		fmt.Println("Abort: " + err)
+		fmt.Println("\nAbort: " + err)
 		os.Exit(1)
 	} else {
 		os.Exit(0)
