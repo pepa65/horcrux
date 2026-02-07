@@ -1,12 +1,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/pepa65/horcrux)](https://goreportcard.com/report/github.com/pepa65/horcrux)
 [![GoDoc](https://godoc.org/github.com/pepa65/horcrux?status.svg)](https://godoc.org/github.com/pepa65/horcrux)
 <img src="https://raw.githubusercontent.com/pepa65/horcrux/master/horcrux.png" width="96" alt="horcrux icon" align="right">
-# horcrux v0.5.2
+# horcrux v1.0.0
 **Split file into encrypted horcrux-files, reconstitutable without key**
 
 * Repo: https://github.com/pepa65/horcrux
 * After https://github.com/jesseduffield/horcrux
-* The technique used is Hashicorp's Shamir's secret sharing, based on Age encryption.
+* The technique used is Hashicorp's Shamir's secret sharing, based on 256 bit AES encryption with CTR.
+  (horcrux versions below 1.0.0 used OFB which is deprecated!)
 
 ## Function
 The program `horcrux` can split a file into a predefined number of encrypted horcrux-files,
@@ -74,7 +75,7 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go install -ldflags="-s -w" -o horcrux.e
 
 ## Usage
 ```
-horcrux v0.5.2 - Split file into 'horcrux-files', reconstitutable without key
+horcrux v1.0.0 - Split file into 'horcrux-files', reconstitutable without key
 Usage:
   - Split & encrypt:  horcrux [-n|--number N] [-m|--minimum M] FILE
         N:     Number of horcrux-files to produce [2..255, default: 2]

@@ -17,7 +17,7 @@ func cryptoReader(r io.Reader, key []byte) io.Reader {
 	}
 
 	var iv [aes.BlockSize]byte
-	stream := cipher.NewOFB(block, iv[:])
+	stream := cipher.NewCTR(block, iv[:])
 
 	return cipher.StreamReader{S: stream, R: r}
 }
