@@ -118,7 +118,7 @@ func main() {
 				}
 			} else { // File
 				if qarg > 0 { // Query
-					if err = commands.Query(path); err != nil {
+					if err = commands.Query(path, version); err != nil {
 						usage(err, "Query of file '"+path+"' failed")
 					}
 					return
@@ -142,26 +142,26 @@ func main() {
 		if m == 0 { // default minimum is all
 			m = n
 		}
-		if err := commands.Split(path, n, m); err != nil {
+		if err := commands.Split(path, n, m, version); err != nil {
 			usage(err, "Splitting file '"+path+"' failed")
 		}
 		return
 	}
 	// Merge
-	if err = commands.Merge(path); err != nil {
+	if err = commands.Merge(path, version); err != nil {
 		usage(err, "Merge in directory '"+path+"' failed")
 	}
 }
 
 func usage(e error, err string) {
-	fmt.Println(self + " v" + version + " - Split file into 'horcrux-files', reconstitutable without key")
+	fmt.Println(self + " v" + version + " - Split file into 'horcrux-files', reconstructable without key")
 	fmt.Println("Usage:")
 	fmt.Println("  - Split & encrypt:  " + self + " [-n|--number N] [-m|--minimum M] FILE")
 	fmt.Println("        N:     Number of horcrux-files to produce [2..255, default: 2]")
-	fmt.Println("        M:     Min.number of horcrux-files to reconstitute [2..N, default: N]")
+	fmt.Println("        M:     Min.number of horcrux-files to reconstruct [2..N, default: N]")
 	fmt.Println("        FILE:  Original file to split up and encrypt")
-	fmt.Println("  - Reconstitute file:  " + self + " [DIR]")
-	fmt.Println("       DIR:  Directory with horcrux-files to reconstitute [default: current]")
+	fmt.Println("  - Reconstruct file:  " + self + " [DIR]")
+	fmt.Println("       DIR:  Directory with horcrux-files to reconstruct [default: current]")
 	fmt.Println("  - Query horcrux-file:  " + self + " -q|--query FILE.horcrux")
 	fmt.Println("       FILE.horcrux:  The horcrux-file to query for information")
 	fmt.Println("  - Get help or version:  " + self + " -h|--help | -V|--version")

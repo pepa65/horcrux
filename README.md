@@ -7,26 +7,26 @@
 * Repo: https://github.com/pepa65/horcrux
 * After https://github.com/jesseduffield/horcrux
 * The technique used is Hashicorp's Shamir's secret sharing, based on 256 bit AES encryption with CTR.
-  (horcrux versions below 1.0.0 used OFB which is deprecated!)
+* Versions of `horcrux` before 1.0.0 used OFB and are not compatible with version 1 horcrux-files!
 
 ## Function
 The program `horcrux` can split a file into a predefined number of encrypted horcrux-files,
-or reconstitute a (predefinable) sufficient number of constituent horcrux-files in a directory
+or reconstruct a (predefinable) sufficient number of constituent horcrux-files in a directory
 back into the original file.
 
 ### Split
 To split up a file into horcrux-files, call `horcrux` with the filename and
 optionally flags `-n`/`--num` with the number of desired horcrux-files and/or
-`-m`/`--min` followed by the minimum number of horcrux-files needed to reconstitute the original file.
+`-m`/`--min` followed by the minimum number of horcrux-files needed to reconstruct the original file.
 Example:
 
 `horcrux -n 5 -m 3 secret.txt`
 
 The resulting horcrux-files can be renamed, dispersed (given to different people or
-stored at different locations) and later be used to reconstitute the original file
+stored at different locations) and later be used to reconstruct the original file
 if the minimum number of needed horcrux-files is met (in this case: 3 out of the 5 are needed).
 
-### Reconstitute
+### Reconstruct
 To merge horcrux-files back into the original file, call `horcrux` in the
 directory containing the horcruxes, or pass that directory as an argument:
 `horcrux directory/with/horcruxes`
@@ -75,14 +75,14 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go install -ldflags="-s -w" -o horcrux.e
 
 ## Usage
 ```
-horcrux v1.0.0 - Split file into 'horcrux-files', reconstitutable without key
+horcrux v1.0.0 - Split file into 'horcrux-files', reconstructable without key
 Usage:
   - Split & encrypt:  horcrux [-n|--number N] [-m|--minimum M] FILE
         N:     Number of horcrux-files to produce [2..255, default: 2]
-        M:     Min.number of horcrux-files to reconstitute [2..N, default: N]
+        M:     Min.number of horcrux-files to reconstruct [2..N, default: N]
         FILE:  Original file to split up and encrypt
-  - Reconstitute file:  horcrux [DIR]
-       DIR:  Directory with horcrux-files to reconstitute [default: current]
+  - Reconstruct file:  horcrux [DIR]
+       DIR:  Directory with horcrux-files to reconstruct [default: current]
   - Query horcrux-file:  horcrux -q|--query FILE.horcrux
        FILE.horcrux:  The horcrux-file to query for information
   - Get help or version:  horcrux -h|--help | -V|--version

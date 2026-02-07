@@ -15,7 +15,7 @@ import (
 	"github.com/pepa65/horcrux/pkg/shamir"
 )
 
-func Split(path string, n int, m int) error {
+func Split(path string, n int, m int, version string) error {
 	key, err := generateKey()
 	if err != nil {
 		return errors.New("problem generating a random key")
@@ -32,7 +32,7 @@ func Split(path string, n int, m int) error {
 	}
 	originalFilename := filepath.Base(path)
 	horcruxFiles := make([]*os.File, n)
-
+	parts := strings.Split(version, ".")
 	for i := range horcruxFiles {
 		index := i + 1
 		headerBytes, err := json.Marshal(&horcruxHeader{
@@ -42,6 +42,7 @@ func Split(path string, n int, m int) error {
 			Total:            n,
 			KeyFragment:      keyFragments[i],
 			Threshold:        m,
+			Version:          parts[0][0],
 		})
 		if err != nil {
 			return errors.New("problem making the header into JSON")
@@ -55,7 +56,7 @@ func Split(path string, n int, m int) error {
 		_ = os.Truncate(horcruxFilename, 0)
 		horcruxFile, err := os.OpenFile(horcruxFilename, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			return errors.New("problem writing horcrux file " + horcruxFilename)
+			return errors.New("problem writing horcrux-file " + horcruxFilename)
 		}
 		defer horcruxFile.Close()
 
@@ -80,7 +81,7 @@ func Split(path string, n int, m int) error {
 	}
 	_, err = io.Copy(writer, reader)
 	if err != nil {
-		return errors.New("problem copying the horcruxes")
+		return errors.New("problem copying the horcrux-files")
 	}
 
 	fmt.Println("Done!")
@@ -88,7 +89,7 @@ func Split(path string, n int, m int) error {
 }
 
 func header(name string, index int, n int, m int, headerBytes []byte) string {
-	return fmt.Sprintf(`/* This file is a "horcrux", an encrypted fragment of '%s'. It is number %d of %d horcruxes that contain parts of the original file, which can be reconstituted when at least %d fragments are present, with the program found here: https://github.com/pepa65/horcrux */
+	return fmt.Sprintf(`/* This file is a "horcrux", an encrypted fragment of '%s'. It is number %d of %d horcruxes that contain parts of the original file, which can be reconstructd when at least %d fragments are present, with the program found here: https://github.com/pepa65/horcrux */
 -- HEADER --
 %s
 -- BODY --
