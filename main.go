@@ -9,7 +9,7 @@ import (
 	"github.com/pepa65/horcrux/pkg/commands"
 )
 
-const version = "0.3.4"
+const version = "0.4.0"
 
 var self = ""
 
@@ -34,7 +34,7 @@ func main() {
 				usage(err, "Argument of -n/--num should be an integer: '"+arg+"'")
 			}
 			if n < 2 {
-				usage(nil, "Argument of -n/--num should be at least 2")
+				usage(nil, "Argument of -n/--num should be 2 or more")
 			}
 			continue
 		}
@@ -49,7 +49,7 @@ func main() {
 				usage(err, "Argument of -m/--min should be an integer: '"+arg+"'")
 			}
 			if m < 2 {
-				usage(nil, "Argument of -m/--min should be at least 2")
+				usage(nil, "Argument of -m/--min should be 2 or more")
 			}
 			continue
 		}
@@ -154,14 +154,17 @@ func main() {
 }
 
 func usage(e error, err string) {
-	fmt.Println(self + " v" + version + " - Split file into encrypted 'horcruxes', mergeable without key")
-	fmt.Println("Usage:  " + self + " [-n|--number <n>] [-m|--minimum <m>] <file>  |  [<dir>]  |")
-	fmt.Println("                -q|--query <horcrux>  |  -V|--version  |  -h|--help")
-	fmt.Println("  <n>:        Number of horcruxes to produce [2..255, default: 2]")
-	fmt.Println("  <m>:        Minimum number of horcruxes needed for merge [2..n, default: n]")
-	fmt.Println("  <file>:     Original file to split up")
-	fmt.Println("  <dir>:      Directory with horcruxes to merge [default: current]")
-	fmt.Println("  <horcrux>:  The horcrux file to query for information")
+	fmt.Println(self + " v" + version + " - Split file into 'horcrux-files', reconstitutable without key")
+	fmt.Println("Usage:")
+	fmt.Println("  - Split & encrypt:  " + self + " [-n|--number N] [-m|--minimum M] FILE")
+	fmt.Println("        N:     Number of horcrux-files to produce [2..255, default: 2]")
+	fmt.Println("        M:     Min.number of horcrux-files to reconstitute [2..n, default: n]")
+	fmt.Println("        FILE:  Original file to split up and encrypt")
+	fmt.Println("  - Reconstitute file:  " + self + " [DIR]")
+	fmt.Println("       DIR:  Directory with horcrux-files to reconstitute [default: current]")
+	fmt.Println("  - Query horcrux-file:  " + self + " -q|--query FILE.horcrux")
+	fmt.Println("       FILE.horcrux:  The horcrux-file to query for information")
+	fmt.Println("  - Get help or version:  " + self + " -h|--help | -V|--version")
 	if e != nil {
 		fmt.Println(e)
 	}
