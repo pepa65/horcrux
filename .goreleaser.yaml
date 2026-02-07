@@ -21,6 +21,7 @@ builds:
     goarch:
       - arm
       - arm64
+      - amd64
     goarm:
       - 5
       - 6
