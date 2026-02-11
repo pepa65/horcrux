@@ -10,10 +10,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/klauspost/compress/zstd"
 	"github.com/pepa65/horcrux/pkg/shamir"
 )
 
-func Split(path string, n int, m int) error {
+func Split(path string, n int, m int, compress bool, force bool) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return errors.New("error opening the file")
@@ -39,6 +40,7 @@ func Split(path string, n int, m int) error {
 		}
 		b64enc.Close()
 	}
+	payloadfull := b64full.String()
 	keyparts, err := shamir.Split(key, n, m)
 	if err != nil {
 		return errors.New("error splitting the key")
@@ -46,31 +48,49 @@ func Split(path string, n int, m int) error {
 
 	timestamp := time.Now().Unix()
 	for i, k := range keyparts {
-		yaml := fmt.Sprintf("filename: %q\ntimestamp: %d\nindex: %d\ntotal: %d\nminimum: %d\nkeypart: %x\npayload: ", filename, timestamp, i+1, n, m, k)
+		payload := payloadfull
 		partname := fmt.Sprintf("%s_horcrux%dof%d.yml", filename, i+1, n)
-		fmt.Printf("creating: %s\n", partname)
-		// Overwriting any existing file, perhaps should be forced with a flag?
-		_ = os.Truncate(partname, 0)
-		partfile, err := os.OpenFile(partname, os.O_WRONLY|os.O_CREATE, 0644)
-		if err != nil {
-			return errors.New("error opening horcrux-file for writing: " + partname)
-		}
-		defer partfile.Close()
-		partfile.WriteString(yaml)
-
 		if m == n {
 			size := towrite / int64(n-i)
 			towrite -= size
-			b64 := base64.NewEncoder(base64.StdEncoding, partfile)
-			_, err := io.CopyN(b64, encReader, size)
+			part := make([]byte, size)
+			_, err := io.ReadFull(encReader, part)
 			if err != nil && err != io.EOF {
 				return err
 			}
-			b64.Close()
-		} else { // m < n
-			partfile.Write(b64full.Bytes())
+			payload = base64.StdEncoding.EncodeToString(part)
 		}
-		partfile.Write([]byte("\n"))
+		yaml := []byte(fmt.Sprintf("filename: %q\ntimestamp: %d\nindex: %d\ntotal: %d\nminimum: %d\nkeypart: %x\npayload: %s\n", filename, timestamp, i+1, n, m, k, payload))
+		if compress {
+			partname = fmt.Sprintf("%s_%dof%d.horcrux", filename, i+1, n)
+		}
+		if !force {
+			_, err := os.Stat(partname)
+			if err == nil {
+				return fmt.Errorf("file '%s' already exists", partname)
+			}
+		}
+		partfile, err := os.Create(partname)
+		if err != nil {
+    	return err
+		}
+		defer partfile.Close()
+		if compress {
+			zwriter, err := zstd.NewWriter(partfile, zstd.WithEncoderLevel(zstd.SpeedBestCompression))
+			if err != nil {
+  	  	return err
+			}
+			defer zwriter.Close()
+			_, err = zwriter.Write(yaml)
+			if err != nil {
+  	  	return err
+			}
+		} else {
+			_, err = partfile.Write(yaml)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }

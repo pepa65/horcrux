@@ -14,7 +14,7 @@ const version = "1.0.0"
 var self = ""
 
 func main() {
-	path, narg, marg, qarg, split, anypath := "", 0, 0, 0, false, false
+	path, narg, marg, qarg, split, anypath, compress, force := "", 0, 0, 0, false, false, false, false
 	var err error
 	var n, m int
 	for _, arg := range os.Args {
@@ -65,6 +65,10 @@ func main() {
 			return
 		case "-h", "--help":
 			usage(nil, "")
+		case "-f", "--force":
+			force = true
+		case "-z", "--zstd":
+			compress = true
 		case "-n", "--number":
 			split = true
 			if narg > 0 {
@@ -140,7 +144,7 @@ func main() {
 		if m == 0 { // default minimum is all
 			m = n
 		}
-		err = commands.Split(path, n, m)
+		err = commands.Split(path, n, m, compress, force)
 		if err != nil {
 			fmt.Println(err)
 			fmt.Println("Splitting file '"+path+"' failed")
@@ -148,7 +152,7 @@ func main() {
 		return
 	}
 	// Merge
-	err = commands.Merge(path)
+	err = commands.Merge(path, compress)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Merge in directory '"+path+"' failed")
@@ -158,7 +162,9 @@ func main() {
 func usage(e error, err string) {
 	fmt.Println(self + " v" + version + " - Split file into 'horcrux-files', reconstructable without key")
 	fmt.Println("Usage:")
-	fmt.Println("- Split & encrypt file:  " + self + " [-n|--number N] [-m|--minimum M] FILE")
+	fmt.Println("  -f/--force:  Created horcrux-files will overwrite existing files")
+	fmt.Println("  -z/--zstd:   Compress each horcrux-file and give it the .horcrux extension")
+	fmt.Println("- Split & encrypt:  " + self + " [-z|--zstd] [-n|--number N] [-m|--minimum M] FILE")
 	fmt.Println("    N:     Number of horcrux-files to produce [1..255, default: 2]")
 	fmt.Println("    M:     Min.number of horcrux-files needed to reconstruct [1..N, default: N]")
 	fmt.Println("    FILE:  Original file to split up and encrypt")

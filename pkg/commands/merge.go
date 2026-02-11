@@ -10,9 +10,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
-	//"github.com/pepa65/horcrux/pkg/multiplexing"
+	"github.com/klauspost/compress/zstd"
 	"github.com/pepa65/horcrux/pkg/shamir"
 	"gopkg.in/yaml.v3"
 )
@@ -24,18 +25,37 @@ func Query(filename string) error {
 	}
 
 	defer file.Close()
-	yml, err := getYmlFile(file)
+	var data []byte
+	if strings.HasSuffix(filename, ".horcrux") {
+		zreader, err := zstd.NewReader(file)
+		if err != nil {
+			return err
+		}
+
+		defer zreader.Close()
+		data, err = io.ReadAll(zreader)
+		if err != nil {
+			return err
+		}
+	} else {
+		data, err = io.ReadAll(file)
+		if err != nil {
+			return err
+		}
+	}
+	var yml ymlFile
+	err = yaml.Unmarshal(data, &yml)
 	if err != nil || yml.Filename == "" {
 		return errors.New("bad YAML")
 	}
 
 	timestamp := time.Unix(yml.Timestamp, 0)
-	fmt.Printf("File '%s' was split at %s\n", yml.Filename, timestamp.Format("2006-01-02 15:04:05 MST"))
+	fmt.Printf("File '%s' was split at %s\n", yml.Filename, timestamp)
 	fmt.Printf("Horcrux-file %d of %d (minimum of %d needed to merge)\n", yml.Index, yml.Total, yml.Minimum)
 	return nil
 }
 
-func Merge(dir string) error {
+func Merge(dir string, compressed bool) error {
 	dirfiles, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return errors.New("empty directory")
@@ -43,7 +63,7 @@ func Merge(dir string) error {
 
 	filenames := []string{}
 	for _, file := range dirfiles {
-		if filepath.Ext(file.Name()) == ".yml" {
+		if (filepath.Ext(file.Name()) == ".yml" && !compressed) || (filepath.Ext(file.Name()) == ".horcrux" && compressed) {
 			filenames = append(filenames, file.Name())
 		}
 	}
@@ -55,16 +75,36 @@ func Merge(dir string) error {
 		}
 
 		defer file.Close()
-		yml, err := getYmlFile(file)
-		if err != nil {
-			return errors.New("unparsable YAML")
+		var data []byte
+		if compressed {
+			zreader, err := zstd.NewReader(file)
+			if err != nil {
+				return err
+			}
+
+			defer zreader.Close()
+			data, err = io.ReadAll(zreader)
+			if err != nil {
+				return err
+			}
+		} else {
+			data, err = io.ReadAll(file)
+			if err != nil {
+				return err
+			}
+		}
+		var yml ymlFile
+fmt.Println(string(data))
+		err = yaml.Unmarshal(data, &yml)
+		if err != nil || yml.Filename == "" {
+			return errors.New("bad YAML")
 		}
 
 		if len(ymls) > 0 && (yml.Filename != ymls[0].Filename || yml.Timestamp != ymls[0].Timestamp || yml.Total != ymls[0].Total || yml.Minimum != ymls[0].Minimum || len(yml.Keypart) != len(ymls[0].Keypart)) {
 			fmt.Println("All horcrux-files in the directory must have the same atributes (except index, keypart and payload)")
 			return errors.New("all horcrux-files in the directory must have the same atributes (except index, keypart and payload)")
 		}
-		ymls = append(ymls, *yml)
+		ymls = append(ymls, yml)
 	}
 	n := len(ymls)
 	if n == 0 {
@@ -123,14 +163,4 @@ func Merge(dir string) error {
 	defer newFile.Close()
 	_, err = io.Copy(newFile, reader)
 	return err
-}
-
-func getYmlFile(file *os.File) (*ymlFile, error) {
-	yml := &ymlFile{}
-	f, err := io.ReadAll(file)
-	err = yaml.Unmarshal(f, yml)
-	if err != nil {
-		return nil, errors.New("YAML content not found")
-	}
-	return yml, nil
 }

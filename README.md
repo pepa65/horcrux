@@ -81,9 +81,11 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go install -ldflags="-s -w" -o horcrux.e
 ```
 horcrux v1.0.0 - Split file into 'horcrux-files', reconstructable without key
 Usage:
-- Split & encrypt file:  horcrux [-n|--number N] [-m|--minimum M] FILE
-    N:     Number of horcrux-files to produce [2..255, default: 2]
-    M:     Min.number of horcrux-files needed to reconstruct [2..N, default: N]
+- Split:  horcrux [-f|--force] [-z|--zstd] [-n|--number N] [-m|--min M] FILE
+  -f/--force:  Created horcrux-files will overwrite existing files
+  -z/--zstd:   Compress each horcrux-file and give it the .horcrux extension
+    N:     Number of horcrux-files to produce [1..255, default: 2]
+    M:     Min.number of horcrux-files needed to reconstruct [1..N, default: N]
     FILE:  Original file to split up and encrypt
 - Reconstruct file:  horcrux [DIR]
     DIR:  Directory with horcrux-files to reconstruct [default: current]

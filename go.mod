@@ -3,3 +3,5 @@ module github.com/pepa65/horcrux
 go 1.25.5
 
 require gopkg.in/yaml.v3 v3.0.1
+
+require github.com/klauspost/compress v1.18.4 // indirect
