@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func cryptoReader(r io.Reader, key []byte) io.Reader {
+func cryptoReader(reader io.Reader, key []byte) io.Reader {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err)
@@ -18,8 +18,7 @@ func cryptoReader(r io.Reader, key []byte) io.Reader {
 
 	var iv [aes.BlockSize]byte
 	stream := cipher.NewCTR(block, iv[:])
-
-	return cipher.StreamReader{S: stream, R: r}
+	return cipher.StreamReader{S: stream, R: reader}
 }
 
 func fileExists(filename string) bool {

@@ -1,103 +1,76 @@
 package commands
 
 import (
+	"bytes"
 	"crypto/rand"
-	"encoding/json"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/pepa65/horcrux/pkg/multiplexing"
 	"github.com/pepa65/horcrux/pkg/shamir"
 )
 
-func Split(path string, n int, m int, version string) error {
-	key, err := generateKey()
+func Split(path string, n int, m int) error {
+	file, err := os.Open(path)
 	if err != nil {
-		return errors.New("problem generating a random key")
+		return errors.New("error opening the file")
 	}
-	keyFragments, err := shamir.Split(key, n, m)
+
+	info, _ := file.Stat()
+	towrite := info.Size()
+	filename := info.Name()
+
+	key := make([]byte, 32)
+	_, err = rand.Read(key)
 	if err != nil {
-		return errors.New("problem splitting the key")
+		return errors.New("error generating a random key")
+	}
+
+	encReader := cryptoReader(file, key)
+	var b64full bytes.Buffer
+	if n > m {
+		b64enc := base64.NewEncoder(base64.StdEncoding, &b64full)
+		_, err := io.Copy(b64enc, encReader)
+		if err != nil {
+			return err
+		}
+		b64enc.Close()
+	}
+	keyparts, err := shamir.Split(key, n, m)
+	if err != nil {
+		return errors.New("error splitting the key")
 	}
 
 	timestamp := time.Now().Unix()
-	file, err := os.Open(path)
-	if err != nil {
-		return errors.New("problem opening the file")
-	}
-	originalFilename := filepath.Base(path)
-	horcruxFiles := make([]*os.File, n)
-	parts := strings.Split(version, ".")
-	for i := range horcruxFiles {
-		index := i + 1
-		headerBytes, err := json.Marshal(&horcruxHeader{
-			OriginalFilename: originalFilename,
-			Timestamp:        timestamp,
-			Index:            index,
-			Total:            n,
-			KeyFragment:      keyFragments[i],
-			Threshold:        m,
-			Version:          parts[0][0],
-		})
+	for i, k := range keyparts {
+		yaml := fmt.Sprintf("filename: %q\ntimestamp: %d\nindex: %d\ntotal: %d\nminimum: %d\nkeypart: %x\npayload: ", filename, timestamp, i+1, n, m, k)
+		partname := fmt.Sprintf("%s_horcrux%dof%d.yml", filename, i+1, n)
+		fmt.Printf("creating: %s\n", partname)
+		// Overwriting any existing file, perhaps should be forced with a flag?
+		_ = os.Truncate(partname, 0)
+		partfile, err := os.OpenFile(partname, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			return errors.New("problem making the header into JSON")
+			return errors.New("error opening horcrux-file for writing: " + partname)
 		}
+		defer partfile.Close()
+		partfile.WriteString(yaml)
 
-		originalFilenameWithoutExt := strings.TrimSuffix(originalFilename, filepath.Ext(originalFilename))
-		horcruxFilename := fmt.Sprintf("%s_%dof%d.horcrux", originalFilenameWithoutExt, index, n)
-		fmt.Printf("creating %s\n", horcruxFilename)
-
-		// Clearing file in case it already existed
-		_ = os.Truncate(horcruxFilename, 0)
-		horcruxFile, err := os.OpenFile(horcruxFilename, os.O_WRONLY|os.O_CREATE, 0644)
-		if err != nil {
-			return errors.New("problem writing horcrux-file " + horcruxFilename)
+		if m == n {
+			size := towrite / int64(n-i)
+			towrite -= size
+			b64 := base64.NewEncoder(base64.StdEncoding, partfile)
+			_, err := io.CopyN(b64, encReader, size)
+			if err != nil && err != io.EOF {
+				return err
+			}
+			b64.Close()
+		} else { // m < n
+			partfile.Write(b64full.Bytes())
 		}
-		defer horcruxFile.Close()
-
-		horcruxFile.WriteString(header(originalFilename, index, n, m, headerBytes))
-		horcruxFiles[i] = horcruxFile
+		partfile.Write([]byte("\n"))
 	}
-
-	// Wrap file reader in an encryption stream
-	var fileReader io.Reader = file
-	reader := cryptoReader(fileReader, key)
-	var writer io.Writer
-	if m == n {
-		// All horcruxes are needed to resurrect the original, so use multiplexer
-		// to divide the encrypted content evenly between the horcruxes
-		writer = &multiplexing.Demultiplexer{Writers: horcruxFiles}
-	} else {
-		writers := make([]io.Writer, len(horcruxFiles))
-		for i := range writers {
-			writers[i] = horcruxFiles[i]
-		}
-		writer = io.MultiWriter(writers...)
-	}
-	_, err = io.Copy(writer, reader)
-	if err != nil {
-		return errors.New("problem copying the horcrux-files")
-	}
-
-	fmt.Println("Done!")
 	return nil
-}
-
-func header(name string, index int, n int, m int, headerBytes []byte) string {
-	return fmt.Sprintf(`/* This file is a "horcrux", an encrypted fragment of '%s'. It is number %d of %d horcruxes that contain parts of the original file, which can be reconstructd when at least %d fragments are present, with the program found here: https://github.com/pepa65/horcrux */
--- HEADER --
-%s
--- BODY --
-`, name, index, n, m, headerBytes)
-}
-
-func generateKey() ([]byte, error) {
-	key := make([]byte, 32)
-	_, err := rand.Read(key)
-	return key, err
 }

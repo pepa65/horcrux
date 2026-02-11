@@ -6,13 +6,13 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"fmt"
-	mathrand "math/rand"
+	mrand "math/rand"
 	"time"
 )
 
 const (
 	// ShareOverhead is the byte size overhead of each share
-	// when using Split on a secret. This is caused by appending
+	// when using Split on a key. This is caused by appending
 	// a one byte tag to the share.
 	ShareOverhead = 1
 )
@@ -142,116 +142,118 @@ func add(a, b uint8) uint8 {
 	return a ^ b
 }
 
-// Split takes an arbitrarily long secret and generates a `parts`
-// number of shares, `threshold` of which are required to reconstruct
-// the secret. The parts and threshold must be at least 2, and less
-// than 256. The returned shares are each one byte longer than the secret
-// as they attach a tag used to reconstruct the secret.
-func Split(secret []byte, parts, threshold int) ([][]byte, error) {
+// Split takes an arbitrarily long key and generates a `number`
+// number of shares, `minimum` of which are required to reconstruct
+// the key. The number and minimum must be at least 2, and less
+// than 256. The returned shares are each one byte longer than the key
+// as they attach a tag used to reconstruct the key.
+func Split(key []byte, number, minimum int) ([][]byte, error) {
 	// Sanity check the input
-	if parts < threshold {
-		return nil, fmt.Errorf("parts cannot be less than threshold")
+	if number < minimum {
+		return nil, fmt.Errorf("number cannot be less than minimum")
 	}
-	if parts > 255 {
-		return nil, fmt.Errorf("parts cannot exceed 255")
+
+	if number > 255 {
+		return nil, fmt.Errorf("number cannot exceed 255")
 	}
-	if threshold < 2 {
-		return nil, fmt.Errorf("threshold must be at least 2")
-	}
-	if threshold > 255 {
-		return nil, fmt.Errorf("threshold cannot exceed 255")
-	}
-	if len(secret) == 0 {
-		return nil, fmt.Errorf("cannot split an empty secret")
+
+	//// Not technically required
+	//if minimum < 2 {
+	//	return nil, fmt.Errorf("minimum must be at least 2")
+	//}
+
+	if len(key) == 0 {
+		return nil, fmt.Errorf("cannot split an empty key")
 	}
 
 	// Generate random list of x coordinates
-	mathrand.Seed(time.Now().UnixNano())
-	xCoordinates := mathrand.Perm(255)
+	mrand.Seed(time.Now().UnixNano())
+	xCoordinates := mrand.Perm(255)
 
 	// Allocate the output array, initialize the final byte
 	// of the output with the offset. The representation of each
 	// output is {y1, y2, .., yN, x}.
-	out := make([][]byte, parts)
+	out := make([][]byte, number)
 	for idx := range out {
-		out[idx] = make([]byte, len(secret)+1)
-		out[idx][len(secret)] = uint8(xCoordinates[idx]) + 1
+		out[idx] = make([]byte, len(key)+1)
+		out[idx][len(key)] = uint8(xCoordinates[idx]) + 1
 	}
 
-	// Construct a random polynomial for each byte of the secret.
+	// Construct a random polynomial for each byte of the key.
 	// Because we are using a field of size 256, we can only represent
 	// a single byte as the intercept of the polynomial, so we must
 	// use a new polynomial for each byte.
-	for idx, val := range secret {
-		p, err := makePolynomial(val, uint8(threshold-1))
+	for idx, val := range key {
+		p, err := makePolynomial(val, uint8(minimum-1))
 		if err != nil {
 			return nil, err
 		}
 
-		// Generate a `parts` number of (x,y) pairs
+		// Generate a `number` number of (x,y) pairs
 		// We cheat by encoding the x value once as the final index,
 		// so that it only needs to be stored once.
-		for i := 0; i < parts; i++ {
+		for i := 0; i < number; i++ {
 			x := uint8(xCoordinates[i]) + 1
 			y := p.evaluate(x)
 			out[i][idx] = y
 		}
 	}
 
-	// Return the encoded secrets
+	// Return the encoded keys
 	return out, nil
 }
 
-// Combine is used to reverse a Split and reconstruct a secret
-// once a `threshold` number of parts are available.
-func Combine(parts [][]byte) ([]byte, error) {
-	// Verify enough parts provided
-	if len(parts) < 2 {
-		return nil, fmt.Errorf("less than two parts cannot be used to reconstruct the secret")
-	}
+// Combine is used to reverse a Split and reconstruct a key
+// once a `minimum` number of keyparts are available.
+func Combine(keyparts [][]byte) ([]byte, error) {
+	//// Not technically required
+	// Verify enough keyparts provided
+	//if len(keyparts) < 2 {
+	//	return nil, fmt.Errorf("less than two keyparts cannot be used to reconstruct the key")
+	//}
 
-	// Verify the parts are all the same length
-	firstPartLen := len(parts[0])
+	// Verify the keyparts are all the same length
+	firstPartLen := len(keyparts[0])
 	if firstPartLen < 2 {
-		return nil, fmt.Errorf("parts must be at least two bytes")
+		return nil, fmt.Errorf("keyparts must be at least two bytes")
 	}
-	for i := 1; i < len(parts); i++ {
-		if len(parts[i]) != firstPartLen {
-			return nil, fmt.Errorf("all parts must be the same length")
+	for i := 1; i < len(keyparts); i++ {
+		if len(keyparts[i]) != firstPartLen {
+			return nil, fmt.Errorf("all keyparts must be the same length")
 		}
 	}
 
-	// Create a buffer to store the reconstructed secret
-	secret := make([]byte, firstPartLen-1)
+	// Create a buffer to store the reconstructed key
+	key := make([]byte, firstPartLen-1)
 
 	// Buffer to store the samples
-	x_samples := make([]uint8, len(parts))
-	y_samples := make([]uint8, len(parts))
+	x_samples := make([]uint8, len(keyparts))
+	y_samples := make([]uint8, len(keyparts))
 
 	// Set the x value for each sample and ensure no x_sample values are the same,
 	// otherwise div() can be unhappy
 	checkMap := map[byte]bool{}
-	for i, part := range parts {
-		samp := part[firstPartLen-1]
+	for i, keypart := range keyparts {
+		samp := keypart[firstPartLen-1]
 		if exists := checkMap[samp]; exists {
-			return nil, fmt.Errorf("duplicate part detected")
+			return nil, fmt.Errorf("duplicate keypart detected")
 		}
 		checkMap[samp] = true
 		x_samples[i] = samp
 	}
 
 	// Reconstruct each byte
-	for idx := range secret {
+	for idx := range key {
 		// Set the y value for each sample
-		for i, part := range parts {
-			y_samples[i] = part[idx]
+		for i, keypart := range keyparts {
+			y_samples[i] = keypart[idx]
 		}
 
 		// Interpolate the polynomial and compute the value at 0
 		val := interpolatePolynomial(x_samples, y_samples, 0)
 
 		// Evaluate the 0th value to get the intercept
-		secret[idx] = val
+		key[idx] = val
 	}
-	return secret, nil
+	return key, nil
 }

@@ -30,11 +30,10 @@ func main() {
 			narg = 2
 			n, err = strconv.Atoi(arg)
 			if err != nil {
-				//fmt.Println(err)
-				usage(err, "Argument of -n/--num should be an integer: '"+arg+"'")
+				usage(err, "Argument of -n/--number should be an integer: '"+arg+"'")
 			}
-			if n < 2 {
-				usage(nil, "Argument of -n/--num should be 2 or more")
+			if n < 1 {
+				usage(nil, "Argument of -n/--number should be 1 or more")
 			}
 			continue
 		}
@@ -45,11 +44,10 @@ func main() {
 			marg = 2
 			m, err = strconv.Atoi(arg)
 			if err != nil {
-				//fmt.Println(err)
-				usage(err, "Argument of -m/--min should be an integer: '"+arg+"'")
+				usage(err, "Argument of -m/--minimum should be an integer: '"+arg+"'")
 			}
-			if m < 2 {
-				usage(nil, "Argument of -m/--min should be 2 or more")
+			if m < 1 {
+				usage(nil, "Argument of -m/--minimum should be 1 or more")
 			}
 			continue
 		}
@@ -67,16 +65,16 @@ func main() {
 			return
 		case "-h", "--help":
 			usage(nil, "")
-		case "-n", "--num":
+		case "-n", "--number":
 			split = true
 			if narg > 0 {
-				usage(nil, "Multiple '-n/--num' flags")
+				usage(nil, "Multiple '-n/--number' flags")
 			}
 			narg = 1
-		case "-m", "--min":
+		case "-m", "--minimum":
 			split = true
 			if marg > 0 {
-				usage(nil, "Multiple '-m/--min' flags")
+				usage(nil, "Multiple '-m/--minimum' flags")
 			}
 			marg = 1
 		case "-q", "--query":
@@ -118,7 +116,7 @@ func main() {
 				}
 			} else { // File
 				if qarg > 0 { // Query
-					if err = commands.Query(path, version); err != nil {
+					if err = commands.Query(path); err != nil {
 						usage(err, "Query of file '"+path+"' failed")
 					}
 					return
@@ -142,29 +140,33 @@ func main() {
 		if m == 0 { // default minimum is all
 			m = n
 		}
-		if err := commands.Split(path, n, m, version); err != nil {
-			usage(err, "Splitting file '"+path+"' failed")
+		err = commands.Split(path, n, m)
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("Splitting file '"+path+"' failed")
 		}
 		return
 	}
 	// Merge
-	if err = commands.Merge(path, version); err != nil {
-		usage(err, "Merge in directory '"+path+"' failed")
+	err = commands.Merge(path)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Merge in directory '"+path+"' failed")
 	}
 }
 
 func usage(e error, err string) {
 	fmt.Println(self + " v" + version + " - Split file into 'horcrux-files', reconstructable without key")
 	fmt.Println("Usage:")
-	fmt.Println("  - Split & encrypt:  " + self + " [-n|--number N] [-m|--minimum M] FILE")
-	fmt.Println("        N:     Number of horcrux-files to produce [2..255, default: 2]")
-	fmt.Println("        M:     Min.number of horcrux-files to reconstruct [2..N, default: N]")
-	fmt.Println("        FILE:  Original file to split up and encrypt")
-	fmt.Println("  - Reconstruct file:  " + self + " [DIR]")
-	fmt.Println("       DIR:  Directory with horcrux-files to reconstruct [default: current]")
-	fmt.Println("  - Query horcrux-file:  " + self + " -q|--query FILE.horcrux")
-	fmt.Println("       FILE.horcrux:  The horcrux-file to query for information")
-	fmt.Println("  - Get help or version:  " + self + " -h|--help | -V|--version")
+	fmt.Println("- Split & encrypt file:  " + self + " [-n|--number N] [-m|--minimum M] FILE")
+	fmt.Println("    N:     Number of horcrux-files to produce [1..255, default: 2]")
+	fmt.Println("    M:     Min.number of horcrux-files needed to reconstruct [1..N, default: N]")
+	fmt.Println("    FILE:  Original file to split up and encrypt")
+	fmt.Println("- Reconstruct file:  " + self + " [DIR]")
+	fmt.Println("   DIR:  Directory with horcrux-files to reconstruct [default: current]")
+	fmt.Println("- Query horcrux-file:  " + self + " -q|--query FILE")
+	fmt.Println("   FILE:  Horcrux-file to query for information (.yml files can be viewed too)")
+	fmt.Println("- Get help or version:  " + self + " -h|--help | -V|--version")
 	if e != nil {
 		fmt.Println(e)
 	}
