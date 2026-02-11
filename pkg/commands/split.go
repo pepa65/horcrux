@@ -93,7 +93,7 @@ func Split(path string, n int, m int, compress bool, force bool) error {
 				return err
 			}
 		}
-		partnames = append(partnames, partname)
+		partnames[i] = partname
 	}
 	fmt.Printf("Written: %s\n", strings.Join(partnames, " "))
 	return nil
