@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/klauspost/compress/zstd"
@@ -46,6 +47,7 @@ func Split(path string, n int, m int, compress bool, force bool) error {
 		return errors.New("error splitting the key")
 	}
 
+	partnames := make([]string, 0, n)
 	timestamp := time.Now().Unix()
 	for i, k := range keyparts {
 		payload := payloadfull
@@ -91,6 +93,8 @@ func Split(path string, n int, m int, compress bool, force bool) error {
 				return err
 			}
 		}
+		partnames = append(partnames, partname)
 	}
+	fmt.Printf("Written: %s\n", strings.Join(partnames, " "))
 	return nil
 }

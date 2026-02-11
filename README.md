@@ -1,7 +1,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/pepa65/horcrux)](https://goreportcard.com/report/github.com/pepa65/horcrux)
 [![GoDoc](https://godoc.org/github.com/pepa65/horcrux?status.svg)](https://godoc.org/github.com/pepa65/horcrux)
 <img src="https://raw.githubusercontent.com/pepa65/horcrux/master/horcrux.png" width="96" alt="horcrux icon" align="right">
-# horcrux v1.1.0
+# horcrux v1.2.0
 **Split file into encrypted horcrux-files, reconstructable without key**
 
 * Repo: https://github.com/pepa65/horcrux
@@ -79,7 +79,7 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go install -ldflags="-s -w" -o horcrux.e
 
 ## Usage
 ```
-horcrux v1.1.0 - Split file into 'horcrux-files', reconstructable without key
+horcrux v1.2.0 - Split file into 'horcrux-files', reconstructable without key
 Usage:
 - Split:  horcrux [-f|--force] [-z|--zstd] [-n|--number N] [-m|--min M] FILE
   -f/--force:  Created horcrux-files will overwrite existing files

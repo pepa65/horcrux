@@ -94,7 +94,6 @@ func Merge(dir string, compressed bool) error {
 			}
 		}
 		var yml ymlFile
-fmt.Println(string(data))
 		err = yaml.Unmarshal(data, &yml)
 		if err != nil || yml.Filename == "" {
 			return errors.New("bad YAML")
@@ -162,5 +161,6 @@ fmt.Println(string(data))
 	}
 	defer newFile.Close()
 	_, err = io.Copy(newFile, reader)
+	fmt.Println("Written: ", newFilename)
 	return err
 }
