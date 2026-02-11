@@ -1,7 +1,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/pepa65/horcrux)](https://goreportcard.com/report/github.com/pepa65/horcrux)
 [![GoDoc](https://godoc.org/github.com/pepa65/horcrux?status.svg)](https://godoc.org/github.com/pepa65/horcrux)
 <img src="https://raw.githubusercontent.com/pepa65/horcrux/master/horcrux.png" width="96" alt="horcrux icon" align="right">
-# horcrux v1.0.0
+# horcrux v1.1.0
 **Split file into encrypted horcrux-files, reconstructable without key**
 
 * Repo: https://github.com/pepa65/horcrux
@@ -31,19 +31,19 @@ if the minimum number of needed horcrux-files are present (in this case: 3 out o
 
 ### Reconstruct
 To merge horcrux-files back into the original file, call `horcrux` in the directory containing the
-horcrux-files (`.yml`). Alternatively, that directory can be given as an argument:
-`horcrux directory/with/horcrux-files`
+horcrux-files (`.yml`, or in the case of `horcrux --zstd`: `.horcrux`).
+Alternatively, that directory can be given as an argument: `horcrux directory/with/horcrux-files`
 
-All other files with non-matching names will be ignored. There should not be any horcrux-files in
-that same directory that were produced with a different command!
+All other files with non-matching names will be ignored. There should not be any horcrux-files with the
+same extention in that same directory that were produced with a different command!
 
 ### Query
 To display information about a horcrux-file, call `horcrux` with the `-q`/`--query`
-flag followed by the filename of the `.horcrux` file, like:
+flag followed by the filename of the horcrux-file, like:
 
 `horcrux -q file.horcrux`
 
-Horcrux files ending in `.yml` can just be opened as a text file to see all information about them.
+Horcrux files ending in `.yml` can also just be opened as a text file to see all information about them.
 
 ## Installation
 ### Download
@@ -79,7 +79,7 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go install -ldflags="-s -w" -o horcrux.e
 
 ## Usage
 ```
-horcrux v1.0.0 - Split file into 'horcrux-files', reconstructable without key
+horcrux v1.1.0 - Split file into 'horcrux-files', reconstructable without key
 Usage:
 - Split:  horcrux [-f|--force] [-z|--zstd] [-n|--number N] [-m|--min M] FILE
   -f/--force:  Created horcrux-files will overwrite existing files
