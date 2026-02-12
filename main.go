@@ -9,7 +9,7 @@ import (
 	"github.com/pepa65/horcrux/pkg/commands"
 )
 
-const version = "1.2.0"
+const version = "1.2.1"
 
 var self = ""
 
@@ -120,7 +120,9 @@ func main() {
 				}
 			} else { // File
 				if qarg > 0 { // Query
-					if err = commands.Query(path); err != nil {
+					err = commands.Query(path)
+					if err != nil {
+						fmt.Println(err)
 						usage(err, "Query of file '"+path+"' failed")
 					}
 					return
@@ -163,12 +165,12 @@ func usage(e error, err string) {
 	fmt.Println(self + " v" + version + " - Split file into 'horcrux-files', reconstructable without key")
 	fmt.Println("Usage:")
 	fmt.Println("  -f/--force:  Created horcrux-files will overwrite existing files")
-	fmt.Println("  -z/--zstd:   Compress each horcrux-file and give it the .horcrux extension")
+	fmt.Println("  -z/--zstd:   Work with compressed .horcrux files instead of with .yml files")
 	fmt.Println("- Split & encrypt:  " + self + " [-z|--zstd] [-n|--number N] [-m|--minimum M] FILE")
 	fmt.Println("    N:     Number of horcrux-files to produce [1..255, default: 2]")
 	fmt.Println("    M:     Min.number of horcrux-files needed to reconstruct [1..N, default: N]")
 	fmt.Println("    FILE:  Original file to split up and encrypt")
-	fmt.Println("- Reconstruct file:  " + self + " [DIR]")
+	fmt.Println("- Reconstruct file:  " + self + " [-z|--zstd] [DIR]")
 	fmt.Println("   DIR:  Directory with horcrux-files to reconstruct [default: current]")
 	fmt.Println("- Query horcrux-file:  " + self + " -q|--query FILE")
 	fmt.Println("   FILE:  Horcrux-file to query for information (.yml files can be viewed too)")
