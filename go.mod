@@ -1,8 +1,8 @@
 module github.com/pepa65/horcrux
 
-go 1.25.5
+go 1.27.1
 
 require (
-	github.com/klauspost/compress v1.19.2
+	github.com/klauspost/compress v1.20.0
 	gopkg.in/yaml.v3 v3.0.1
 )
