@@ -9,7 +9,7 @@ import (
 	"github.com/pepa65/horcrux/pkg/commands"
 )
 
-const version = "1.2.8"
+const version = "1.2.9"
 
 var self = ""
 
